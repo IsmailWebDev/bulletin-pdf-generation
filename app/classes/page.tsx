@@ -1,62 +1,52 @@
 import React from 'react';
 import Link from 'next/link';
-import { getClasses, getStudents } from '../actions/dataActions';
+import { getClasses } from '../actions/dataActions';
 
 export default async function ClassPage() {
   const classes = await getClasses();
-  const students = await getStudents();
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Classes</h1>
-      <Link
-        href="/classes/add"
-        className="text-blue-500 hover:underline mb-4 inline-block"
-      >
-        Add New Class
-      </Link>
+      <div className="flex space-x-4 mb-4">
+        <Link
+          href="/classes/add"
+          className="text-blue-500 hover:underline"
+        >
+          Add New Class
+        </Link>
+        <Link
+          href="/modules"
+          className="text-blue-500 hover:underline"
+        >
+          View All Modules
+        </Link>
+        <Link
+          href="/students"
+          className="text-blue-500 hover:underline"
+        >
+          View All Students
+        </Link>
+      </div>
       {classes.length === 0 ? (
         <p>No classes found.</p>
       ) : (
-        classes.map((classItem) => (
-          <div
-            key={classItem.id}
-            className="mb-8 border p-4 rounded-lg shadow"
-          >
-            <h2 className="text-xl font-semibold mb-2">
-              {classItem.name}
-            </h2>
-            <h3 className="text-lg font-medium mb-2">Modules:</h3>
-            <ul className="list-disc pl-5 mb-4">
-              {classItem.modules.map((module) => (
-                <li key={module.id}>
-                  <Link
-                    href={`/modules/${module.id}`}
-                    className="text-blue-500 hover:underline"
-                  >
-                    {module.name} ({module.code})
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <h3 className="text-lg font-medium mb-2">Students:</h3>
-            <ul className="list-disc pl-5">
-              {students
-                .filter((student) => student.classId === classItem.id)
-                .map((student) => (
-                  <li key={student.id}>
-                    {student.name} -
-                    <Link
-                      href={`/reports/${student.id}`}
-                      className="text-blue-500 hover:underline ml-2"
-                    >
-                      Download Report
-                    </Link>
-                  </li>
-                ))}
-            </ul>
-          </div>
-        ))
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {classes.map((classItem) => (
+            <Link
+              href={`/classes/${classItem.id}`}
+              key={classItem.id}
+            >
+              <div className="border p-4 rounded-lg shadow hover:shadow-md transition-shadow">
+                <h2 className="text-xl font-semibold mb-2">
+                  {classItem.name}
+                </h2>
+                <p>{classItem.students.length} students</p>
+                <p>{classItem.modules.length} modules</p>
+              </div>
+            </Link>
+          ))}
+        </div>
       )}
     </div>
   );

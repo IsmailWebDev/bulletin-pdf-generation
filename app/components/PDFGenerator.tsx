@@ -1,3 +1,5 @@
+// app/components/PDFGenerator.tsx
+
 'use client';
 
 import dynamic from 'next/dynamic';
@@ -19,7 +21,7 @@ import {
   View,
   StyleSheet,
 } from '@react-pdf/renderer';
-import { Student, Class } from '../types';
+import { Student, Class, Module, Assessment } from '@prisma/client';
 
 const styles = StyleSheet.create({
   page: {
@@ -38,7 +40,7 @@ const styles = StyleSheet.create({
     color: '#444444',
   },
   table: {
-    display: 'table',
+    // display: 'table',
     width: 'auto',
     borderStyle: 'solid',
     borderWidth: 1,
@@ -76,7 +78,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   decisionRow: {
-    height: 50, // Adjust this value to increase or decrease the decision row height
+    height: 50,
   },
   decisionLabel: {
     fontSize: 10,
@@ -93,17 +95,21 @@ const PDFDocument = ({
   student,
   classInfo,
 }: {
-  student: Student;
+  student: Student & {
+    assessments: (Assessment & { module: Module })[];
+  };
   classInfo: Class;
 }) => {
   const calculateFinalNote = () => {
-    const totalWeightedSum = student.modules.reduce(
-      (sum, module) =>
-        sum + module.coefficient * module.continuousAssessment,
+    const totalWeightedSum = student.assessments.reduce(
+      (sum, assessment) =>
+        sum +
+        assessment.module.coefficient *
+          assessment.continuousAssessment,
       0
     );
-    const totalCoefficients = student.modules.reduce(
-      (sum, module) => sum + module.coefficient,
+    const totalCoefficients = student.assessments.reduce(
+      (sum, assessment) => sum + assessment.module.coefficient,
       0
     );
     return totalWeightedSum / totalCoefficients;
@@ -138,24 +144,28 @@ const PDFDocument = ({
               </Text>
             </View>
           </View>
-          {student.modules.map((module, index) => (
+          {student.assessments.map((assessment, index) => (
             <View style={styles.tableRow} key={index}>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCellCentered}>
-                  {module.code}
+                  {assessment.module.code}
                 </Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{module.name}</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCellCentered}>
-                  {module.coefficient}
+                <Text style={styles.tableCell}>
+                  {assessment.module.name}
                 </Text>
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCellCentered}>
-                  {formatFloatWithComma(module.continuousAssessment)}
+                  {assessment.module.coefficient}
+                </Text>
+              </View>
+              <View style={styles.tableCol}>
+                <Text style={styles.tableCellCentered}>
+                  {formatFloatWithComma(
+                    assessment.continuousAssessment
+                  )}
                 </Text>
               </View>
             </View>
@@ -189,7 +199,9 @@ const PDFDocument = ({
 };
 
 interface PDFGeneratorProps {
-  student: Student;
+  student: Student & {
+    assessments: (Assessment & { module: Module })[];
+  };
   classInfo: Class;
 }
 

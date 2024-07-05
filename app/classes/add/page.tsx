@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { addClass } from '../../actions/dataActions';
 import { useRouter } from 'next/navigation';
+import { addClass } from '../../actions/dataActions';
 
 export default function AddClassPage() {
   const [className, setClassName] = useState('');
@@ -16,7 +16,7 @@ export default function AddClassPage() {
   };
 
   return (
-    <div>
+    <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Add New Class</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -34,7 +34,7 @@ export default function AddClassPage() {
         </div>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 "
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Add Class
         </button>

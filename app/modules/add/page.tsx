@@ -1,52 +1,87 @@
 'use client';
 
-import React, { useState } from 'react';
-import { addModule } from '../../actions/dataActions';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { addModule, getClasses } from '../../actions/dataActions';
 
 export default function AddModulePage() {
-  const [moduleName, setModuleName] = useState('');
-  const [moduleCode, setModuleCode] = useState('');
-  const [coefficient, setCoefficient] = useState(1);
+  const [moduleData, setModuleData] = useState({
+    name: '',
+    code: '',
+    coefficient: 1,
+    classIds: [] as string[],
+  });
+  const [classes, setClasses] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      const fetchedClasses = await getClasses();
+      setClasses(fetchedClasses);
+    };
+    fetchClasses();
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setModuleData((prev) => ({
+      ...prev,
+      [name]: name === 'coefficient' ? parseFloat(value) : value,
+    }));
+  };
+
+  const handleClassChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selectedOptions = Array.from(
+      e.target.selectedOptions,
+      (option) => option.value
+    );
+    setModuleData((prev) => ({
+      ...prev,
+      classIds: selectedOptions,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await addModule({
-      name: moduleName,
-      code: moduleCode,
-      coefficient,
-    });
+    await addModule(moduleData);
     router.push('/modules');
     router.refresh();
   };
 
   return (
-    <div>
+    <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Add New Module</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="moduleName" className="block mb-2">
+          <label htmlFor="name" className="block mb-2">
             Module Name:
           </label>
           <input
             type="text"
-            id="moduleName"
-            value={moduleName}
-            onChange={(e) => setModuleName(e.target.value)}
+            id="name"
+            name="name"
+            value={moduleData.name}
+            onChange={handleChange}
             required
             className="w-full px-3 py-2 border rounded text-black"
           />
         </div>
         <div>
-          <label htmlFor="moduleCode" className="block mb-2">
+          <label htmlFor="code" className="block mb-2">
             Module Code:
           </label>
           <input
             type="text"
-            id="moduleCode"
-            value={moduleCode}
-            onChange={(e) => setModuleCode(e.target.value)}
+            id="code"
+            name="code"
+            value={moduleData.code}
+            onChange={handleChange}
             required
             className="w-full px-3 py-2 border rounded text-black"
           />
@@ -58,12 +93,32 @@ export default function AddModulePage() {
           <input
             type="number"
             id="coefficient"
-            value={coefficient}
-            onChange={(e) => setCoefficient(Number(e.target.value))}
+            name="coefficient"
+            value={moduleData.coefficient}
+            onChange={handleChange}
             required
-            min="1"
+            min="0"
+            step="0.1"
             className="w-full px-3 py-2 border rounded text-black"
           />
+        </div>
+        <div>
+          <label htmlFor="classes" className="block mb-2">
+            Classes:
+          </label>
+          <select
+            id="classes"
+            name="classes"
+            multiple
+            onChange={handleClassChange}
+            className="w-full px-3 py-2 border rounded text-black"
+          >
+            {classes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
         </div>
         <button
           type="submit"
